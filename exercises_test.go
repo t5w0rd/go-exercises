@@ -247,9 +247,9 @@ func initStrings2(length int) []string {
 	var buf [32]byte
 	const r = 'z' - 'a'
 	for i := 0; i < length; i++ {
-		n := rnd2.Int() % 16 + 16
+		n := rnd2.Int()%16 + 16
 		for j := 0; j < n; j++ {
-			buf[j] = byte(rnd2.Int31() % r + 'a')
+			buf[j] = byte(rnd2.Int31()%r + 'a')
 		}
 		ret[i] = string(buf[:n])
 	}
@@ -261,20 +261,20 @@ func initStrings3(length int, minLen int, maxLen int, kinds int) []string {
 	var buf [32]byte
 	const r = 'z' - 'a'
 	for i := 0; i < kinds; i++ {
-		n := rnd2.Int() % (maxLen - minLen) + minLen
+		n := rnd2.Int()%(maxLen-minLen) + minLen
 		for j := 0; j < n; j++ {
-			buf[j] = byte(rnd2.Int31() % r + 'a')
+			buf[j] = byte(rnd2.Int31()%r + 'a')
 		}
 		ret[i] = string(buf[:n])
 	}
 
 	for left := length - len(ret); left > 0; left = length - len(ret) {
-		s := ret[rnd2.Int() % kinds]
+		s := ret[rnd2.Int()%kinds]
 		var n int
 		if left <= 1 {
 			n = 1
 		} else {
-			n = rnd2.Int() % (left - 1) + 1
+			n = rnd2.Int()%(left-1) + 1
 		}
 		for i := 0; i < n; i++ {
 			ret = append(ret, s)
