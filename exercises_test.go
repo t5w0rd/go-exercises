@@ -103,26 +103,16 @@ func TestLCM2(t *testing.T) {
 }
 
 func BenchmarkGCD(b *testing.B) {
+	f := GCD
 	for i := 0; i < b.N; i++ {
-		GCD(293284, 104006)
-	}
-}
-
-func BenchmarkGCD2(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		GCD2(293284, 104006)
+		f(293284, 104006)
 	}
 }
 
 func BenchmarkLCM(b *testing.B) {
+	f := LCM
 	for i := 0; i < b.N; i++ {
-		LCM(293284, 104006)
-	}
-}
-
-func BenchmarkLCM2(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		LCM2(293284, 104006)
+		f(293284, 104006)
 	}
 }
 
@@ -385,4 +375,75 @@ func BenchmarkBKDRHash(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		BKDRHash("abcdefg")
 	}
+}
+
+func initBinTree() *BinTreeNode {
+	t := &BinTreeNode{
+		2,
+		&BinTreeNode{
+			7,
+			&BinTreeNode{2, nil, nil},
+			&BinTreeNode{
+				6,
+				&BinTreeNode{5, nil, nil},
+				&BinTreeNode{11, nil, nil},
+			},
+		},
+		&BinTreeNode{
+			5,
+			nil,
+			&BinTreeNode{
+				9,
+				&BinTreeNode{4, nil, nil},
+				nil,
+			},
+		},
+	}
+
+	return t
+}
+
+func printNode(node *BinTreeNode) {
+	println(node.data)
+}
+
+func TestLMR(t *testing.T) {
+	tree := initBinTree()
+	LMR(tree, printNode)
+}
+
+func TestLMR2(t *testing.T) {
+	tree := initBinTree()
+	LMR2(tree, printNode)
+}
+
+func TestLMR3(t *testing.T) {
+	tree := initBinTree()
+	LMR2(tree, printNode)
+}
+
+func BenchmarkLMR(b *testing.B) {
+	tree := initBinTree()
+	f := LMR
+	for i := 0; i < b.N; i++ {
+		f(tree, func(node *BinTreeNode) {})
+	}
+}
+
+func TestMLR(t *testing.T) {
+	tree := initBinTree()
+	MLR(tree, printNode)
+}
+
+func BenchmarkRingIncrease(b *testing.B) {
+	f := RingIncrease
+	n := 0
+	for i := 0; i < b.N; i++ {
+		n = f(n, 10)
+	}
+}
+
+func TestBS(t *testing.T) {
+	tree := initBinTree()
+	BS(tree, printNode)
 }

@@ -96,7 +96,7 @@ func GCD2(a, b int) int {
 }
 
 func LCM(a, b int) int {
-	return a * b / GCD(a, b)
+	return a / GCD(a, b) * b
 }
 
 func LCM2(a, b int) int {
@@ -148,4 +148,24 @@ func StringKinds3(h *HashTable, arr []string) int {
 		}
 	}
 	return c
+}
+
+func RingIncrease(n, m int) int {
+	return (n + 1) % m
+}
+
+func RingIncrease2(n, m int) int {
+	if n+1 == m {
+		return 0
+	} else {
+		return n + 1
+	}
+}
+
+func RingIncrease3(n, m int) int {
+	if t := n + 1; t == m {
+		return 0
+	} else {
+		return t
+	}
 }
