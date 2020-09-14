@@ -3,23 +3,18 @@ package exercises
 import (
 	"math/rand"
 	"testing"
-	"time"
 )
 
 var rnd *rand.Rand
-var rnd2 *rand.Rand
 
 func init() {
-	s := rand.NewSource(time.Now().UnixNano())
-	rnd = rand.New(s)
-
-	rnd2 = rand.New(rand.NewSource(0))
+	rnd = rand.New(rand.NewSource(1234567))
 }
 
 func initStrings() (string, string) {
 	var bufA, bufB []byte
 	for i := 0; i < 10000000; i++ {
-		c := byte(rand.Int()%26 + int('a'))
+		c := byte(rnd.Int()%26 + int('a'))
 		bufA = append(bufA, c)
 		bufB = append(bufB, c+byte('A')-byte('a'))
 	}
@@ -40,44 +35,25 @@ func TestBaseNConverter_ToNumber(t *testing.T) {
 	t.Log(n)
 }
 
-func TestStrcat1(t *testing.T) {
-	println(Strcat1("abc", "def"))
-}
-
+// 554, 49844, 51939, 41017
 func BenchmarkStrcat1(b *testing.B) {
-	stringA, stringB := initStrings()
-	var n int
+	arr := initStrings2(1000)
+	f := Strcat4
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		n = len(Strcat1(stringA, stringB))
+		f(arr)
 	}
-	b.Log(n)
 }
 
-func BenchmarkStrcat2(b *testing.B) {
-	stringA, stringB := initStrings()
-	var n int
+func BenchmarkConvertString(b *testing.B) {
+	s, _ := initStrings()
+	var buf []byte
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		n = len(Strcat1(stringA, stringB))
+		buf = []byte(s)
 	}
-	b.Log(n)
-}
-
-func BenchmarkStrcat3(b *testing.B) {
-	stringA, stringB := initStrings()
-	var n int
-	for i := 0; i < b.N; i++ {
-		n = len(Strcat1(stringA, stringB))
-	}
-	b.Log(n)
-}
-
-func BenchmarkStrcat4(b *testing.B) {
-	stringA, stringB := initStrings()
-	var n int
-	for i := 0; i < b.N; i++ {
-		n = len(Strcat1(stringA, stringB))
-	}
-	b.Log(n)
+	b.StopTimer()
+	b.Log(len(buf))
 }
 
 func TestGCD(t *testing.T) {
@@ -104,6 +80,7 @@ func TestLCM2(t *testing.T) {
 
 func BenchmarkGCD(b *testing.B) {
 	f := GCD
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		f(293284, 104006)
 	}
@@ -111,6 +88,7 @@ func BenchmarkGCD(b *testing.B) {
 
 func BenchmarkLCM(b *testing.B) {
 	f := LCM
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		f(293284, 104006)
 	}
@@ -237,9 +215,9 @@ func initStrings2(length int) []string {
 	var buf [32]byte
 	const r = 'z' - 'a'
 	for i := 0; i < length; i++ {
-		n := rnd2.Int()%16 + 16
+		n := rnd.Int()%16 + 16
 		for j := 0; j < n; j++ {
-			buf[j] = byte(rnd2.Int31()%r + 'a')
+			buf[j] = byte(rnd.Int31()%r + 'a')
 		}
 		ret[i] = string(buf[:n])
 	}
@@ -251,27 +229,27 @@ func initStrings3(length int, minLen int, maxLen int, kinds int) []string {
 	var buf [32]byte
 	const r = 'z' - 'a'
 	for i := 0; i < kinds; i++ {
-		n := rnd2.Int()%(maxLen-minLen) + minLen
+		n := rnd.Int()%(maxLen-minLen) + minLen
 		for j := 0; j < n; j++ {
-			buf[j] = byte(rnd2.Int31()%r + 'a')
+			buf[j] = byte(rnd.Int31()%r + 'a')
 		}
 		ret[i] = string(buf[:n])
 	}
 
 	for left := length - len(ret); left > 0; left = length - len(ret) {
-		s := ret[rnd2.Int()%kinds]
+		s := ret[rnd.Int()%kinds]
 		var n int
 		if left <= 1 {
 			n = 1
 		} else {
-			n = rnd2.Int()%(left-1) + 1
+			n = rnd.Int()%(left-1) + 1
 		}
 		for i := 0; i < n; i++ {
 			ret = append(ret, s)
 		}
 	}
 
-	rnd2.Shuffle(length, func(i, j int) {
+	rnd.Shuffle(length, func(i, j int) {
 		ret[i], ret[j] = ret[j], ret[i]
 	})
 
@@ -316,6 +294,7 @@ func BenchmarkStringKinds(b *testing.B) {
 	f := StringKinds
 	//f := genStringKinds3()
 	//f := StringKinds2
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		if f(arr) != res {
 			b.Fail()
@@ -366,6 +345,7 @@ func BenchmarkPrimes(b *testing.B) {
 
 func BenchmarkHashTable_Put(b *testing.B) {
 	h := NewHashTable(100000, 5)
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		h.Put("abcdefg", 10000)
 	}
@@ -446,4 +426,10 @@ func BenchmarkRingIncrease(b *testing.B) {
 func TestBS(t *testing.T) {
 	tree := initBinTree()
 	BS(tree, printNode)
+}
+
+func TestChangeSlice(t *testing.T) {
+	arr := []int{5, 5, 5, 5, 5}
+	ChangeSlice(arr)
+	t.Log(arr)
 }

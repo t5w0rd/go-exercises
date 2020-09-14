@@ -57,24 +57,34 @@ func NewBaseNConverter(charSet []byte) *BaseNConverter {
 	}
 }
 
-func Strcat1(a, b string) string {
-	return a + b
+func Strcat1(arr []string) (ret string) {
+	for _, s := range arr {
+		ret += s
+	}
+	return ret
 }
 
-func Strcat2(a, b string) string {
-	return string(append([]byte(a), b...))
+func Strcat2(arr []string) (ret string) {
+	var buf []byte
+	for _, s := range arr {
+		buf = append(buf, s...)
+	}
+	return string(buf)
 }
 
-func Strcat3(a, b string) string {
+func Strcat3(arr []string) (ret string) {
 	sb := &strings.Builder{}
-	sb.WriteString(a)
-	sb.WriteString(b)
+	for _, s := range arr {
+		sb.WriteString(s)
+	}
 	return sb.String()
 }
 
-func Strcat4(a, b string) string {
-	buf := bytes.NewBufferString(a)
-	buf.WriteString(b)
+func Strcat4(arr []string) (ret string) {
+	buf := &bytes.Buffer{}
+	for _, s := range arr {
+		buf.WriteString(s)
+	}
 	return buf.String()
 }
 
@@ -168,4 +178,8 @@ func RingIncrease3(n, m int) int {
 	} else {
 		return t
 	}
+}
+
+func ChangeSlice(arr []int) {
+	arr[0] = 1
 }
