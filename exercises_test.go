@@ -1,6 +1,7 @@
 package exercises
 
 import (
+	"math"
 	"math/rand"
 	"testing"
 )
@@ -12,12 +13,16 @@ func init() {
 }
 
 func Test(t *testing.T) {
-	buf := make([]byte, 2, 5)
-	buf[0] = byte('a')
-	buf[0] = byte('b')
-	println(copy(buf, "1234"))
-	println(buf)
-	println(string(buf))
+	a, b, c := math.NaN(), math.Inf(1), math.Inf(-1)
+
+	m := make(map[float64]string)
+	m[a] = "a"
+	m[a] = "a"
+	m[a] = "a"
+	println(len(m), m[a])
+
+	m[b] = "b"
+	m[c] = "c"
 }
 
 func initStrings() (string, string) {
@@ -444,7 +449,14 @@ func TestChangeSlice(t *testing.T) {
 }
 
 func BenchmarkSum64String(b *testing.B) {
-
+	//f := BKDRSum64String
+	f := XXSum64String
+	arr := initStrings2(1000, 10000, 20000)
+	s := arr[0]
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		f(s)
+	}
 }
 
 func BenchmarkStringBytes(b *testing.B) {
