@@ -2,6 +2,7 @@ package exercises
 
 import (
 	"github.com/cespare/xxhash"
+	"hash"
 )
 
 func BKDRHash(s string) int32 {
@@ -24,4 +25,10 @@ func BKDRSum64String(s string) uint64 {
 
 func XXSum64String(s string) uint64 {
 	return xxhash.Sum64String(s)
+}
+
+func Hash(h hash.Hash, bs []byte) []byte {
+	h.Reset()
+	h.Write(bs)
+	return h.Sum(nil)
 }

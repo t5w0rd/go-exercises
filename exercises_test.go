@@ -1,6 +1,7 @@
 package exercises
 
 import (
+	"hash/fnv"
 	"math"
 	"math/rand"
 	"testing"
@@ -23,6 +24,7 @@ func Test(t *testing.T) {
 
 	m[b] = "b"
 	m[c] = "c"
+
 }
 
 func initStrings() (string, string) {
@@ -448,17 +450,6 @@ func TestChangeSlice(t *testing.T) {
 	t.Log(arr)
 }
 
-func BenchmarkSum64String(b *testing.B) {
-	//f := BKDRSum64String
-	f := XXSum64String
-	arr := initStrings2(1000, 10000, 20000)
-	s := arr[0]
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		f(s)
-	}
-}
-
 func BenchmarkStringBytes(b *testing.B) {
 	f := StringBytes
 	var sum int
@@ -503,5 +494,32 @@ func BenchmarkCopyBytes(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		sum += len(f(bs, buf))
+	}
+
+	fnv.New32()
+}
+
+func BenchmarkSum64String(b *testing.B) {
+	//f := BKDRSum64String
+	f := XXSum64String
+	arr := initStrings2(1000, 10000, 20000)
+	s := arr[0]
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		f(s)
+	}
+}
+
+func BenchmarkHash(b *testing.B) {
+	arr := initStrings2(1000, 10000, 20000)
+	bs := []byte(arr[0])
+	b.ResetTimer()
+	//h := md5.New()  // 2w5 ns
+	//h := fnv.New128()  // 4w ns
+	//h := fnv.New128()  // 4w ns
+	//h := xxhash.New()  // 1344 ns
+	h := fnv.New64() // 2w ns
+	for i := 0; i < b.N; i++ {
+		Hash(h, bs)
 	}
 }
