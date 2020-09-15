@@ -11,6 +11,15 @@ func init() {
 	rnd = rand.New(rand.NewSource(1234567))
 }
 
+func Test(t *testing.T) {
+	buf := make([]byte, 2, 5)
+	buf[0] = byte('a')
+	buf[0] = byte('b')
+	println(copy(buf, "1234"))
+	println(buf)
+	println(string(buf))
+}
+
 func initStrings() (string, string) {
 	var bufA, bufB []byte
 	for i := 0; i < 10000000; i++ {
@@ -37,7 +46,7 @@ func TestBaseNConverter_ToNumber(t *testing.T) {
 
 // 554, 49844, 51939, 41017
 func BenchmarkStrcat1(b *testing.B) {
-	arr := initStrings2(1000)
+	arr := initStrings2(1000, 16, 32)
 	f := Strcat4
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -210,12 +219,12 @@ func TestMaxHeap(t *testing.T) {
 	t.Log(m)
 }
 
-func initStrings2(length int) []string {
+func initStrings2(length int, min, max int) []string {
 	ret := make([]string, length)
-	var buf [32]byte
+	buf := make([]byte, max)
 	const r = 'z' - 'a'
 	for i := 0; i < length; i++ {
-		n := rnd.Int()%16 + 16
+		n := rnd.Int()%(max-min) + min
 		for j := 0; j < n; j++ {
 			buf[j] = byte(rnd.Int31()%r + 'a')
 		}
@@ -257,7 +266,7 @@ func initStrings3(length int, minLen int, maxLen int, kinds int) []string {
 }
 
 func TestInitString2(t *testing.T) {
-	for i, s := range initStrings2(1e7) {
+	for i, s := range initStrings2(1e7, 16, 32) {
 		t.Log(i, s)
 	}
 }
@@ -432,4 +441,55 @@ func TestChangeSlice(t *testing.T) {
 	arr := []int{5, 5, 5, 5, 5}
 	ChangeSlice(arr)
 	t.Log(arr)
+}
+
+func BenchmarkSum64String(b *testing.B) {
+
+}
+
+func BenchmarkStringBytes(b *testing.B) {
+	f := StringBytes
+	var sum int
+	arr := initStrings2(1, 10000, 20000)
+	s := arr[0]
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		sum += len(f(s))
+	}
+}
+
+func BenchmarkBytesString(b *testing.B) {
+	f := BytesString
+	arr := initStrings2(1, 10000, 20000)
+	bs := []byte(arr[0])
+	var sum int
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		sum += len(f(bs))
+	}
+}
+
+func BenchmarkCopyString(b *testing.B) {
+	f := CopyString
+	arr := initStrings2(1, 10000, 20000)
+	s := arr[0]
+	buf := make([]byte, len(s))
+	var sum int
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		sum += len(f(s, buf))
+	}
+}
+
+func BenchmarkCopyBytes(b *testing.B) {
+	f := CopyBytes
+	arr := initStrings2(1, 10000, 20000)
+	s := arr[0]
+	bs := []byte(s)
+	buf := make([]byte, len(bs))
+	var sum int
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		sum += len(f(bs, buf))
+	}
 }

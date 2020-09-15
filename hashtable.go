@@ -19,15 +19,6 @@ func Primes(n int) (primes []int) {
 	return primes
 }
 
-func BKDRHash(s string) int32 {
-	seed := int32(131) // 31 131 113 13131 131313 etc..
-	hash := int32(0)
-	for _, c := range s {
-		hash = hash*seed + c
-	}
-	return hash & 0x7fffffff
-}
-
 type hashNode struct {
 	key   string
 	value interface{}
