@@ -9,8 +9,6 @@ func NewQueue(size int) *Queue {
 	data := make([]interface{}, size)
 	return &Queue{
 		data:   data,
-		head:   -1,
-		tail:   -1,
 		length: 0,
 	}
 }

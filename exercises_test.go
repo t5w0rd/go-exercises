@@ -15,8 +15,7 @@ func init() {
 }
 
 func Test(t *testing.T) {
-	n := 257
-	var a uint8 = uint8(n)
+	a := new([]byte)
 	t.Log(a)
 }
 
