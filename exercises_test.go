@@ -2,8 +2,9 @@ package exercises
 
 import (
 	"hash/fnv"
-	"math"
 	"math/rand"
+	"reflect"
+	"runtime"
 	"testing"
 )
 
@@ -14,17 +15,9 @@ func init() {
 }
 
 func Test(t *testing.T) {
-	a, b, c := math.NaN(), math.Inf(1), math.Inf(-1)
-
-	m := make(map[float64]string)
-	m[a] = "a"
-	m[a] = "a"
-	m[a] = "a"
-	println(len(m), m[a])
-
-	m[b] = "b"
-	m[c] = "c"
-
+	n := 257
+	var a uint8 = uint8(n)
+	t.Log(a)
 }
 
 func initStrings() (string, string) {
@@ -521,5 +514,66 @@ func BenchmarkHash(b *testing.B) {
 	h := fnv.New64() // 2w ns
 	for i := 0; i < b.N; i++ {
 		Hash(h, bs)
+	}
+}
+
+func TestStringType(t *testing.T) {
+	s := "nh 你好"
+	t.Log(len(s))
+
+	for i := 0; i < len(s); i++ {
+		t.Log(i, reflect.TypeOf(s[0]), s[i])
+	}
+
+	for i, c := range s {
+		t.Log(i, reflect.TypeOf(s[0]), s[i])
+		t.Log(i, reflect.TypeOf(c), c)
+	}
+}
+
+func TestChan(t *testing.T) {
+	ch := make(chan int, 4)
+	ch <- 1
+	ch <- 2
+	ch <- 3
+	close(ch)
+	t.Log(len(ch))
+	t.Log(<-ch)
+	a, b := <-ch
+	t.Log(a, b)
+	t.Log(<-ch)
+	t.Log(<-ch)
+	ch <- 4 // panic
+	t.Log(<-ch)
+}
+
+func TestSeqBefore(t *testing.T) {
+	var seq1 uint8 = 1
+	seq2 := seq1 + 128
+	if !SeqBefore(seq1, seq2) {
+		t.Fail()
+	}
+}
+
+func TestConcurrencyAdd(t *testing.T) {
+	f := ConcurrencyAdd4
+	threads := runtime.NumCPU() * 10
+	const loops = 10000
+
+	var x int64
+	target := x + int64(threads)*loops
+	f(&x, threads, loops)
+	t.Log(x, target)
+}
+
+func BenchmarkConcurrencyAdd(b *testing.B) {
+	f := ConcurrencyAdd
+	threads := runtime.NumCPU() * 1
+	const loops = 10000
+
+	var x int64
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		f(&x, threads, loops)
 	}
 }

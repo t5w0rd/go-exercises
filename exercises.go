@@ -183,3 +183,8 @@ func RingIncrease3(n, m int) int {
 func ChangeSlice(arr []int) {
 	arr[0] = 1
 }
+
+func SeqBefore(seq1, seq2 uint8) bool {
+	println(int8(seq1 - seq2))
+	return int8(seq1-seq2) < 0
+}
