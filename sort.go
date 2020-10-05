@@ -1,6 +1,9 @@
 package exercises
 
-import "sync"
+import (
+	"sort"
+	"sync"
+)
 
 func BubbleSort(arr []int) []int {
 	n := len(arr)
@@ -154,24 +157,37 @@ func QuickSort3(arr []int) []int {
 	return arr
 }
 
-func shiftDown(arr []int, p int) {
+func heapAdjust(arr []int, p int) []int {
 	n := len(arr)
 	l := (p << 1) + 1
-	if l >= n {
-		return
-	}
-	r := l + 1
 	largest := p
 	if arr[l] > arr[largest] {
 		largest = l
 	}
-	if r < n && arr[r] > arr[largest] {
+
+	if r := l + 1; r < n && arr[r] > arr[largest] {
 		largest = r
 	}
-	if largest != p {
-		arr[p], arr[largest] = arr[largest], arr[p]
-		shiftDown(arr, largest)
+
+	if largest == p {
+		return arr
 	}
+
+	arr[p], arr[largest] = arr[largest], arr[p]
+	if largest >= n>>1 {
+		// largest节点没有子节点
+		return arr
+	}
+
+	return heapAdjust(arr, largest)
+}
+
+func MaxHeap(arr []int) []int {
+	n := len(arr)
+	for i := (n >> 1) - 1; i >= 0; i-- {
+		heapAdjust(arr, i)
+	}
+	return arr
 }
 
 func heapBubble(a []int, pos int) {
@@ -185,31 +201,39 @@ func heapBubble(a []int, pos int) {
 	}
 }
 
+func MaxHeap2(arr []int) []int {
+	n := len(arr)
+	for i := 2; i <= n; i++ {
+		heapBubble(arr[:i], i-1)
+	}
+	return arr
+}
+
 func HeapSort(arr []int) []int {
 	n := len(arr)
 	if n <= 1 {
 		return arr
 	}
 
-	// build heap
-	for i := 2; i < n; i++ {
-		heapBubble(arr[:i], i-1)
+	// build max heap
+	for i := (n >> 1) - 1; i >= 0; i-- {
+		heapAdjust(arr, i)
 	}
-	println(arr)
+	arr[0], arr[n-1] = arr[n-1], arr[0]
 
-	for i := n - 1; i >= 1; i-- {
-		arr[0], arr[i] = arr[i], arr[0]
-		shiftDown(arr[:i], 0)
+	for i := n - 1; i >= 2; i-- {
+		heapAdjust(arr[:i], 0)
+		arr[0], arr[i-1] = arr[i-1], arr[0]
 	}
-	println(arr)
 	return arr
 }
 
-func MaxHeap(arr []int) int {
-	heap := make([]int, 0, len(arr))
-	for i, e := range arr {
-		heap = append(heap, e)
-		heapBubble(heap, i)
-	}
-	return heap[0]
+func GoSort(arr []int) []int {
+	sort.Ints(arr)
+	return arr
+}
+
+func GoStableSort(arr []int) []int {
+	sort.Stable(sort.IntSlice(arr))
+	return arr
 }

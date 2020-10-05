@@ -30,7 +30,7 @@ type sender struct {
 	mss  int
 	buf  *bytes.Buffer
 	mtx  sync.Mutex
-	rto time.Duration
+	rto  time.Duration
 	quit chan struct{}
 	dev  device
 }

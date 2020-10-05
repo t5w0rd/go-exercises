@@ -17,6 +17,21 @@ func init() {
 func Test(t *testing.T) {
 	a := new([]byte)
 	t.Log(a)
+	var b, bb []int
+	c := make([]int, 0)
+	cc := make([]int, 0)
+	d := []int{}
+	t.Log(
+		len(b),
+		len(c),
+		reflect.DeepEqual(b, c),
+		reflect.DeepEqual(c, d),
+		reflect.DeepEqual(b, bb),
+		reflect.DeepEqual(c, cc),
+	)
+
+	arr := []int{3, 0, 5, 20, 8, 9, 28}
+	t.Log(HeapSort(arr))
 }
 
 func initStrings() (string, string) {
@@ -212,10 +227,83 @@ func BenchmarkQuickSort3(b *testing.B) {
 	}
 }
 
+func checkMaxHeap(heap []int) bool {
+	n := len(heap)
+	m := n >> 1
+	for i := 0; i < m; i++ {
+		l := (i << 1) + 1
+		if heap[l] > heap[i] {
+			return false
+		}
+		if r := l + 1; r < n && heap[r] > heap[i] {
+			return false
+		}
+	}
+	return true
+}
+
 func TestMaxHeap(t *testing.T) {
-	arr := []int{3, 0, 5, 20, 8, 9}
-	m := HeapSort(arr)
-	t.Log(m)
+	//arr := []int{3, 0, 5, 20, 8, 9, 28}
+	arr := randArrayWithSeed(10000, 100)
+	f := MaxHeap2
+	f(arr)
+	if !checkMaxHeap(arr) {
+		t.Fail()
+	}
+}
+
+func BenchmarkMaxHeap(b *testing.B) {
+	arr := randArrayWithSeed(10000, 100)
+	f := MaxHeap
+	b.ResetTimer()
+	b.StopTimer()
+	for i := 0; i < b.N; i++ {
+		heap := make([]int, len(arr))
+		copy(heap, arr)
+
+		b.StartTimer()
+		f(heap)
+		b.StopTimer()
+
+		if !checkMaxHeap(heap) {
+			b.Fail()
+		}
+	}
+}
+
+func TestSort(t *testing.T) {
+	arr := randArray(10000)
+	f := BubbleSort
+	f(arr)
+	if !checkSort(arr) {
+		t.Fail()
+	}
+}
+
+func BenchmarkSort(b *testing.B) {
+	//f := BubbleSort
+	//f := SelectSort
+	//f := InsertSort
+	//f := HeapSort
+	//f := QuickSort
+	//f := QuickSort2
+	//f := QuickSort3
+	//f := GoSort
+	f := GoStableSort
+
+	b.ResetTimer()
+	b.StopTimer()
+	for i := 0; i < b.N; i++ {
+		arr := randArray(10000)
+
+		b.StartTimer()
+		f(arr)
+		b.StopTimer()
+
+		if !checkSort(arr) {
+			b.Fail()
+		}
+	}
 }
 
 func initStrings2(length int, min, max int) []string {
