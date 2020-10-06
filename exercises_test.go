@@ -5,7 +5,9 @@ import (
 	"math/rand"
 	"reflect"
 	"runtime"
+	"sync"
 	"testing"
+	"time"
 )
 
 var rnd *rand.Rand
@@ -643,7 +645,7 @@ func TestSeqBefore(t *testing.T) {
 }
 
 func TestConcurrencyAdd(t *testing.T) {
-	f := ConcurrencyAdd4
+	f := ConcurrencyAdd
 	threads := runtime.NumCPU() * 10
 	const loops = 10000
 
@@ -654,7 +656,7 @@ func TestConcurrencyAdd(t *testing.T) {
 }
 
 func BenchmarkConcurrencyAdd(b *testing.B) {
-	f := ConcurrencyAdd
+	f := ConcurrencyAdd2
 	threads := runtime.NumCPU() * 1
 	const loops = 10000
 
@@ -662,5 +664,38 @@ func BenchmarkConcurrencyAdd(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		f(&x, threads, loops)
+	}
+}
+
+func TestRateLimiter_Acquire(t *testing.T) {
+	threads := 10
+	loops := 500000
+	qps := loops * threads / 5
+	tb := NewRateLimiter(qps)
+	defer tb.Stop()
+
+	tm := time.Now()
+	wg := sync.WaitGroup{}
+	for i := 0; i < threads; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for i := 0; i < loops; i++ {
+				tb.Acquire()
+			}
+		}()
+	}
+	wg.Wait()
+
+	realQPS := float64(loops*threads) / time.Now().Sub(tm).Seconds()
+	t.Logf("%.1f/%d, %.1f%%", realQPS, qps, realQPS*100/float64(qps))
+}
+
+func BenchmarkRateLimiter_Acquire(b *testing.B) {
+	b.Log("b.N:", b.N)
+	tb := NewRateLimiter(10000)
+	defer tb.Stop()
+	for i := 0; i < b.N; i++ {
+		tb.Acquire()
 	}
 }

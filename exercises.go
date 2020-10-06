@@ -188,3 +188,8 @@ func SeqBefore(seq1, seq2 uint8) bool {
 	println(int8(seq1 - seq2))
 	return int8(seq1-seq2) < 0
 }
+
+func ReturnDefer() (i int) {
+	defer func() { i++ }()
+	return 1
+}
