@@ -671,8 +671,8 @@ func TestRateLimiter_Acquire(t *testing.T) {
 	threads := 10
 	loops := 500000
 	qps := loops * threads / 5
-	tb := NewRateLimiter(qps)
-	defer tb.Stop()
+	r := NewRateLimiter(qps)
+	defer r.Stop()
 
 	tm := time.Now()
 	wg := sync.WaitGroup{}
@@ -681,7 +681,7 @@ func TestRateLimiter_Acquire(t *testing.T) {
 		go func() {
 			defer wg.Done()
 			for i := 0; i < loops; i++ {
-				tb.Acquire()
+				r.Acquire()
 			}
 		}()
 	}
@@ -693,9 +693,32 @@ func TestRateLimiter_Acquire(t *testing.T) {
 
 func BenchmarkRateLimiter_Acquire(b *testing.B) {
 	b.Log("b.N:", b.N)
-	tb := NewRateLimiter(10000)
-	defer tb.Stop()
+	r := NewRateLimiter(10000)
+	defer r.Stop()
 	for i := 0; i < b.N; i++ {
-		tb.Acquire()
+		r.Acquire()
+	}
+}
+
+func TestRateLimiter_Acquire2(t *testing.T) {
+	loops := 1000000
+	qps := 10000
+	r := NewRateLimiter2(qps)
+
+	tm := time.Now()
+	println(r.limit)
+	for i := 0; i < loops; i++ {
+		r.Acquire()
+	}
+
+	realQPS := float64(loops) / time.Now().Sub(tm).Seconds()
+	t.Logf("%.1f/%d, %.1f%%", realQPS, qps, realQPS*100/float64(qps))
+}
+
+func BenchmarkRateLimiter2_Acquire(b *testing.B) {
+	b.Log("b.N:", b.N)
+	r := NewRateLimiter2(40)
+	for i := 0; i < b.N; i++ {
+		r.Acquire()
 	}
 }

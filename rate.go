@@ -51,43 +51,106 @@ func NewRateLimiter(QPS int) *RateLimiter {
 	return tb
 }
 
-func (tb *RateLimiter) Acquire() {
-	for tb.acquireNoWait() == 0 {
-		time.Sleep(time.Second / time.Duration(tb.qps))
+func (r *RateLimiter) Acquire() {
+	for r.acquireNoWait() == 0 {
+		time.Sleep(time.Second / time.Duration(r.qps))
 	}
 }
 
-func (tb *RateLimiter) AcquireContext(ctx context.Context) {
-	for tb.acquireNoWait() == 0 {
+func (r *RateLimiter) AcquireContext(ctx context.Context) {
+	for r.acquireNoWait() == 0 {
 		select {
 		case <-ctx.Done():
 			return
 		default:
-			time.Sleep(time.Second / time.Duration(tb.qps))
+			time.Sleep(time.Second / time.Duration(r.qps))
 		}
 	}
 }
 
-func (tb *RateLimiter) AcquireNoWait() bool {
-	return tb.acquireNoWait() == 1
+func (r *RateLimiter) AcquireNoWait() bool {
+	return r.acquireNoWait() == 1
 }
 
-func (tb *RateLimiter) acquireNoWait() int {
-	//if atomic.LoadInt32(&tb.stopped) == 1 {
-	if tb.stopped == 1 {
+func (r *RateLimiter) acquireNoWait() int {
+	//if atomic.LoadInt32(&r.stopped) == 1 {
+	if r.stopped == 1 {
 		return -1
 	}
 
-	//if atomic.LoadInt64(&tb.tokens) <= 0 {
-	if tb.tokens <= 0 {
+	//if atomic.LoadInt64(&r.tokens) <= 0 {
+	if r.tokens <= 0 {
 		return 0
 	}
-	atomic.AddInt64(&tb.tokens, -1)
+	atomic.AddInt64(&r.tokens, -1)
 	return 1
 }
 
-func (tb *RateLimiter) Stop() {
-	//atomic.StoreInt32(&tb.stopped, 1)
-	tb.stopped = 1
-	close(tb.stop)
+func (r *RateLimiter) Stop() {
+	//atomic.StoreInt32(&r.stopped, 1)
+	r.stopped = 1
+	close(r.stop)
+}
+
+type RateLimiter2 struct {
+	q         *Queue
+	cur       int
+	sum       int
+	pos       int
+	subWin    int
+	subWinNum int
+	limit     int
+}
+
+func NewRateLimiter2(QPS int) *RateLimiter2 {
+	subWin := 1
+	subWinNum := 5
+	q := NewQueue(subWinNum + 1)
+
+	return &RateLimiter2{
+		q:         q,
+		cur:       0,
+		sum:       0,
+		subWin:    subWin,
+		subWinNum: subWinNum,
+		limit:     QPS * subWin * subWinNum,
+	}
+}
+
+func (r *RateLimiter2) acquireNoWait() int {
+	pos := int(time.Now().Unix()) / r.subWin
+	if pos > r.pos {
+		r.q.EnQueue([2]int{r.pos, r.cur})
+		r.sum += r.cur
+		r.pos = pos
+		r.cur = 0
+
+		leftPos := pos - r.subWinNum
+		for head, ok := r.q.Head(); ok; head, ok = r.q.Head() {
+			v := head.([2]int)
+			p, sub := v[0], v[1]
+			if p >= leftPos {
+				break
+			}
+			r.q.DeQueue()
+			r.sum -= sub
+		}
+	}
+	//println(r.limit)
+	if r.sum+r.cur > r.limit {
+		//println(r.sum+r.cur, r.limit)
+		return 0
+	}
+	r.cur++
+	return 1
+}
+
+func (r *RateLimiter2) Acquire() {
+	for r.acquireNoWait() == 0 {
+		time.Sleep(time.Second / time.Duration(r.limit/(r.subWin*r.subWinNum)))
+	}
+}
+
+func (r *RateLimiter2) AcquireNoWait() bool {
+	return r.acquireNoWait() == 1
 }

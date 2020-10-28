@@ -51,3 +51,19 @@ func (q *Queue) DeQueue() (data interface{}, ok bool) {
 func (q *Queue) Length() int {
 	return q.length
 }
+
+func (q *Queue) Head() (data interface{}, ok bool) {
+	if q.length == 0 {
+		return nil, false
+	}
+	return q.data[q.head], true
+}
+
+func (q *Queue) Tail() (data interface{}, ok bool) {
+	if q.length == 0 {
+		return nil, false
+	}
+	return q.data[q.tail], true
+}
+
+// TODO: 相关单元测试 && 无锁队列
